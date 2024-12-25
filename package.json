@@ -5,8 +5,8 @@
     "type": "module",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
-        "start:watch": "node --watch bot.js",
-        "start:dev": "nodemon bot.js"
+        "start:watch": "node --watch server.js",
+        "start:dev": "nodemon server.js"
     },
     "keywords": [],
     "author": "",
@@ -14,7 +14,8 @@
     "description": "",
     "dependencies": {
         "express": "^4.21.2",
-        "grammy": "^1.33.0"
+        "grammy": "^1.33.0",
+        "mongoose": "^8.9.2"
     },
     "devDependencies": {
         "dotenv": "^16.4.7",

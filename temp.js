@@ -23,6 +23,7 @@ const subscriptionButtons = new InlineKeyboard()
     .row()
     .text("Tasdiqlash ✅", "confirm_subscription");
 bot.command("start", async (ctx) => {
+    isSubscribed;
     ctx.reply(
         "Xush kelibsiz! Botning barcha hususiyatlaridan foydalanish uchun kanallarga obuna bo'ling va 'Tasdiqlash ✅' tugmasini bosing.",
         { reply_markup: subscriptionButtons }

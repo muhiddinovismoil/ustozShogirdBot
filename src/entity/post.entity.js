@@ -1,4 +1,4 @@
-import { Schema, model } from "mongoose";
+import mongoose, { Schema } from "mongoose";
 const postsSchema = Schema(
     {
         user_id: { type: String },
@@ -20,4 +20,4 @@ const postsSchema = Schema(
     },
     { timestamps: true }
 );
-export const Posts = model("posts", postsSchema);
+export const Posts = mongoose.model("posts", postsSchema);

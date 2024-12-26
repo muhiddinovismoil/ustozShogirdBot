@@ -1,6 +1,15 @@
 import { bot } from "../debug/bot.js";
 import { menuButtons } from "../keyboards/menu.keyboard.js";
 const userSteps = {};
+const startFlow = async (ctx, type) => {
+    const userId = ctx.chat.id;
+    userSteps[userId] = { step: "name", type };
+
+    const introMessage = `${type} uchun ariza berish\n\nHozir sizga birnecha savollar beriladi.\nHar biriga javob bering.\nOxirida agar hammasi to\`g\`ri bo\`lsa, HA tugmasini bosing va arizangiz Adminga yuboriladi.`;
+
+    await ctx.reply(introMessage);
+    await ctx.reply("Ism, familyangizni kiriting?");
+};
 
 bot.command("start", (ctx) => {
     const keyboard = {
@@ -16,29 +25,33 @@ bot.command("start", (ctx) => {
         reply_markup: keyboard,
     });
 });
-
-bot.hears("Sherik kerak", async (ctx) => {
-    const userId = ctx.chat.id;
-    userSteps[userId] = { step: "name" };
-    await ctx.reply(
-        "Sherik topish uchun ariza berish\n\nHozir sizga birnecha savollar beriladi.\nHar biriga javob bering.\nOxirida agar hammasi to`g`ri bo`lsa, HA tugmasini bosing va arizangiz Adminga yuboriladi."
-    );
-    await ctx.reply("Ism, familyangizni kiriting?");
+[
+    "Sherik kerak",
+    "Ish joyi kerak",
+    "Hodim kerak",
+    "Ustoz kerak",
+    "Shogird kerak",
+].forEach((type) => {
+    bot.hears(type, async (ctx) => startFlow(ctx, type));
 });
+
 bot.on("message", async (ctx) => {
     const userId = ctx.chat.id;
     const userMessage = ctx.message?.text;
+
     if (!userSteps[userId]) {
         ctx.reply("Iltimos, /start tugmasini bosib qayta urinib ko'ring.");
         return;
     }
-    const step = userSteps[userId].step;
+
+    const { step, type } = userSteps[userId];
+
     switch (step) {
         case "name":
             userSteps[userId].name = userMessage;
             userSteps[userId].step = "technology";
             ctx.reply(
-                "📚 Texnologiya:\n\nTalab qilinadigan texnologiyalarni kiriting?\nTexnologiya nomlarini vergul bilan ajrating.\nMasalan,\n\nJava, C++, C#"
+                "📚 Texnologiya:\n\nTalab qilinadigan texnologiyalarni kiriting?\nTexnologiya nomlarini vergul bilan ajrating.\nMasalan, Java, C++, C#"
             );
             break;
         case "technology":
@@ -50,13 +63,13 @@ bot.on("message", async (ctx) => {
             break;
         case "phone":
             userSteps[userId].phone = userMessage;
-            userSteps[userId].step = "position";
+            userSteps[userId].step = "region";
             ctx.reply(
                 "🌐 Hudud:\n\nQaysi hududdansiz?\nViloyat nomi, Toshkent shahar yoki Respublikani kiriting."
             );
             break;
-        case "position":
-            userSteps[userId].position = userMessage;
+        case "region":
+            userSteps[userId].region = userMessage;
             userSteps[userId].step = "price";
             ctx.reply(
                 "💰 Narxi:\n\nTolov qilasizmi yoki Tekinmi?\nKerak bo`lsa, Summani kiriting?"
@@ -64,31 +77,40 @@ bot.on("message", async (ctx) => {
             break;
         case "price":
             userSteps[userId].price = userMessage;
-            userSteps[userId].step = "trade";
+            userSteps[userId].step = "job";
             ctx.reply(
                 "👨🏻‍💻 Kasbi:\n\nIshlaysizmi yoki o`qiysizmi?\nMasalan, Talaba"
             );
             break;
-        case "trade":
-            userSteps[userId].trade = userMessage;
-            userSteps[userId].step = "cloc";
+        case "job":
+            userSteps[userId].job = userMessage;
+            userSteps[userId].step = "time";
             ctx.reply(
                 "🕰 Murojaat qilish vaqti:\n\nQaysi vaqtda murojaat qilish mumkin?\nMasalan, 9:00 - 18:00"
             );
             break;
-        case "cloc":
-            userSteps[userId].cloc = userMessage;
+        case "time":
+            userSteps[userId].time = userMessage;
+
             const keyboard = {
                 keyboard: [[{ text: "Ha" }, { text: "Yo'q" }]],
                 resize_keyboard: true,
                 one_time_keyboard: false,
             };
+
+            // Prepare and display the final confirmation message
             await ctx.reply(
-                `Sherik kerak:\n\n🏅 Sherik: ${userSteps[userId].name}\n📚 Texnologiya: ${userSteps[userId].technology}\n🇺🇿 Telegram: @${ctx.from.username}\n📞 Aloqa: ${userSteps[userId].phone}\n🌐 Hudud:${userSteps[userId].position}\n💰 Narxi: ${userSteps[userId].price}\n👨🏻‍💻 Kasbi: ${userSteps[userId].trade}\n🕰 Murojaat qilish vaqti: ${userSteps[userId].cloc}`
+                `${type} uchun ariza:\n\n` +
+                    `🏅 Ism: ${userSteps[userId].name}\n` +
+                    `📚 Texnologiya: ${userSteps[userId].technology}\n` +
+                    `🇺🇿 Telegram: @${ctx.from.username || "Noma'lum"}\n` +
+                    `📞 Aloqa: ${userSteps[userId].phone}\n` +
+                    `🌐 Hudud: ${userSteps[userId].region}\n` +
+                    `💰 Narxi: ${userSteps[userId].price}\n` +
+                    `👨🏻‍💻 Kasbi: ${userSteps[userId].job}\n` +
+                    `🕰 Murojaat qilish vaqti: ${userSteps[userId].time}`,
+                { reply_markup: keyboard }
             );
-            await ctx.reply("Barcha ma'lumotlar to'g'rimi?", {
-                reply_markup: keyboard,
-            });
             userSteps[userId].step = "confirm";
             break;
         case "confirm":

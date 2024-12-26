@@ -1,5 +1,5 @@
 import mongoose, { Schema } from "mongoose";
-const usersSchema = Schema(
+const usersSchema = new Schema(
     {
         user_id: {
             type: String,
